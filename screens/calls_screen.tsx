@@ -1,7 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
-import { Alert, Button, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { Alert, Button, SectionList, StyleSheet, Text, View, SafeAreaView} from 'react-native';
 
-export default function CallsScreen() {
+export default function ChatsScreen() {
   return (
     <View style={styles.container}>
       <Text>Calls screen!</Text>
@@ -17,4 +18,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  item: {
+    backgroundColor: '#f9c2ff',
+    padding: 20,
+    marginVertical: 8,
+},
+title: {
+  fontSize: 24,
+}
 });
