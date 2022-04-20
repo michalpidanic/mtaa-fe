@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, SafeAreaView, StyleSheet, TextInput } from "react-native";
 import { Appbar, Button, Card, Snackbar } from "react-native-paper";
-import { useAuth } from "../contexts/Auth";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState("");

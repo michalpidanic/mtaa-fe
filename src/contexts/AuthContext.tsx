@@ -8,6 +8,8 @@ type AuthContextData = {
   loading: boolean;
   login(userName: string, password: string);
   logout();
+  getAccessToken();
+  getUserId();
 };
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -59,8 +61,44 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  const getAccessToken = async () => {
+    if (authData) {
+      return authData.accessToken;
+    } else {
+      try {
+        const authDataSerialized = await AsyncStorage.getItem("@AuthData");
+        if (authDataSerialized) {
+          const authData: AuthData = JSON.parse(authDataSerialized);
+          return authData.accessToken;
+        }
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    }
+  };
+
+  const getUserId = async () => {
+    if (authData) {
+      return authData.userId;
+    } else {
+      try {
+        const authDataSerialized = await AsyncStorage.getItem("@AuthData");
+        if (authDataSerialized) {
+          const authData: AuthData = JSON.parse(authDataSerialized);
+          return authData.userId;
+        }
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ authData, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{ authData, loading, login, logout, getAccessToken, getUserId }}
+    >
       {children}
     </AuthContext.Provider>
   );

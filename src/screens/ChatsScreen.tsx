@@ -12,55 +12,61 @@ import { StatusBar } from "expo-status-bar";
 import moment from "moment";
 import Avatar from "../components/Avatar";
 import { Appbar } from "react-native-paper";
-
-var userList = [
-  {
-    id: "1",
-    realName: "Jozko Vajda",
-    // profileImage: require("../assets/favicon.png"),
-    lastMessage: "Pridem ta pozret <3",
-    lastMessageTime: moment().format("LT"),
-  },
-  {
-    id: "2",
-    realName: "Stefan Skrucany",
-    // profileImage: require("../assets/favicon.png"),
-    lastMessage: "Chudak Meky",
-    lastMessageTime: moment().format("LT"),
-  },
-  {
-    id: "3",
-    realName: "Marika Gombitova",
-    // profileImage: require("../assets/favicon.png"),
-    lastMessage: "Uz sa kotulam!",
-    lastMessageTime: moment().format("LT"),
-  },
-];
+import ChatItem from "../components/ChatItem";
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import API from "../../Api";
+import { Loading } from "../components/Loading";
 
 export default function ChatsScreen() {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const auth = useAuth();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      auth.getAccessToken().then((token) => {
+        API.get("chat", {
+          // params: { page: page ?? null, limit: limit ?? null },
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((res) => {
+            console.log(res);
+            setData(res.data.chats);
+          })
+          .then(() => setLoading(false))
+          .catch((error) => {
+            setLoading(false);
+            console.log(error);
+          });
+      });
+    };
+
+    fetchData();
+  }, []);
+
   return (
-    // <View style={styles.container}>
-    //   <SafeAreaView style={styles.androidSafeArea} />
-    //   <FlatList
-    //     style={styles.list}
-    //     data={userList}
-    //     renderItem={({ item }) => (
-    //       <View style={styles.contact}>
-    //         <Avatar fullName={item.realName}></Avatar>
-    //         <View style={styles.contactData}>
-    //           <Text style={styles.name}>{item.realName}</Text>
-    //           <Text style={styles.date}>{item.lastMessageTime}</Text>
-    //           <Text style={styles.description}>{item.lastMessage}</Text>
-    //         </View>
-    //       </View>
-    //     )}
-    //     keyExtractor={(item) => item.id}
-    //   />
-    // </View>
     <SafeAreaView>
       <Appbar.Header style={styles.header}>
         <Appbar.Content title="Chats" style={styles.header} />
       </Appbar.Header>
+      {loading && <Loading />}
+      {!loading && (
+        <View>
+          {data.map((item) => (
+            <ChatItem
+              chatName={item.chat.name}
+              messageText={item.lastMessage.text}
+              messageCreated={
+                item.lastMessage.createdAt
+                  ? moment(item.lastMessage.createdAt).format("HH:mm")
+                  : null
+              }
+              id={item.chat.id}
+            />
+          ))}
+        </View>
+      )}
     </SafeAreaView>
   );
 }

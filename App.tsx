@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { DefaultTheme, Provider as PaperProvider } from "react-native-paper";
 import { Router } from "./src/routes/Router";
-import { AuthProvider } from "./src/contexts/Auth";
+import { AuthProvider } from "./src/contexts/AuthContext";
 
 const theme = {
   ...DefaultTheme,

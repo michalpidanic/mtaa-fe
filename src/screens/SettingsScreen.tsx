@@ -1,7 +1,7 @@
 import React from "react";
 import { SafeAreaView, StyleSheet, View } from "react-native";
 import { Appbar, Button } from "react-native-paper";
-import { useAuth } from "../contexts/Auth";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function SettingsScreen() {
   const auth = useAuth();

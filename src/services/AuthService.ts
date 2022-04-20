@@ -4,11 +4,11 @@ import { AuthData, RegistrationData } from "../types/AppTypes";
 const login = (userName: string, password: string) => {
   return API.post("auth/login", { userName: userName, password: password })
     .then((res) => {
-      console.log(res.data);
       return {
         accessToken: res.data.accessToken,
         refreshToken: res.data.refreshToken,
         userName: res.data.userName,
+        userId: res.data.userId,
       } as AuthData;
     })
     .catch((err) => console.log(err));
