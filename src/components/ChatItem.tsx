@@ -6,10 +6,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
 import { Loading } from "./Loading";
 import API from "../../Api";
+import { NavigationHelpersContext, useNavigation } from "@react-navigation/native";
 
 export default function ChatItem(props: ChatItemProps) {
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState(null);
+
+  const navigator = useNavigation();
+
 
   //   const createChat = () => {
   //     auth.getAccessToken().then((token) => {
@@ -42,7 +46,7 @@ export default function ChatItem(props: ChatItemProps) {
 
   const onClick = () =>
   {
-    console.log('Clickd')
+    navigator.navigate("Room", {id: props.id, name: props.chatName, currentUser: props.currentUser});
   }
 
   return (
@@ -101,4 +105,5 @@ type ChatItemProps = {
   id: number;
   messageText: string;
   messageCreated: string;
+  currentUser: number;
 };

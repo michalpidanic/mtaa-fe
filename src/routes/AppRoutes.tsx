@@ -2,19 +2,44 @@ import React from "react";
 import CallsScreen from "../screens/CallsScreen";
 import ChatsScreen from "../screens/ChatsScreen";
 import UsersScreen from "../screens/UsersScreen";
+import ChatRoom from "../screens/ChatRoom";
 import NotificationsScreen from "../screens/NotificationsScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 const Tab = createMaterialBottomTabNavigator();
+
+const Stack = createNativeStackNavigator();
+
+function ChatNav() {
+  return (
+    <Stack.Navigator >
+      <Stack.Screen
+        name="Chat"
+        component={ChatsScreen} 
+        options={{
+          headerShown: false
+        }}
+        />
+      <Stack.Screen
+        name="Room"
+        component={ChatRoom} 
+        options={{
+          headerShown: false
+        }}
+        />
+    </Stack.Navigator>
+  );
+}
 
 export const AppRoutes = () => {
   return (
     <Tab.Navigator barStyle={{ backgroundColor: "#6200ee" }}>
       <Tab.Screen
         name="Chats"
-        component={ChatsScreen}
+        component={ChatNav}
         options={{
           tabBarIcon: ({ focused }) => (
             <Ionicons

@@ -31,7 +31,7 @@ export default function ChatsScreen() {
           headers: { Authorization: `Bearer ${token}` },
         })
           .then((res) => {
-            console.log(res);
+            //console.log(res);
             setData(res.data.chats);
           })
           .then(() => setLoading(false))
@@ -62,6 +62,7 @@ export default function ChatsScreen() {
                   ? moment(item.lastMessage.createdAt).format("HH:mm")
                   : null
               }
+              currentUser={item.user.id}
               id={item.chat.id}
             />
           ))}
