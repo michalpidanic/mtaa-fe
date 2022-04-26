@@ -1,18 +1,39 @@
 import { useEffect, useState } from 'react';
-import { SafeAreaView, Text, View, StyleSheet, } from 'react-native';
+import { SafeAreaView, Text, View, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
 import { Appbar } from 'react-native-paper';
 import { Loading } from '../components/Loading';
 import { useRoute } from '@react-navigation/native'
 import { useAuth } from '../contexts/AuthContext';
 import API from "../../Api";
 import Message from '../components/Message';
+import { Ionicons } from "@expo/vector-icons";
 
 export default function ChatsRoom() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const auth = useAuth();
+    const [message, onChangeText] = useState('');
     
     const route = useRoute();
+
+    const textSend = async () => {
+        {message && auth.getAccessToken().then((token) => {
+            API.post('/message/send',
+            {
+                text: message,
+                mentions: "",
+                chatId: route.params.id,
+            },
+            {
+                headers: 
+                {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+            )})
+        }
+        
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -44,14 +65,28 @@ export default function ChatsRoom() {
         {loading && <Loading />}
         {!loading && (
             <View>
-                {data.map((item) => (
-                    <Message
-                    text={item.text}
-                    id={item.chat.id}
-                    myMessage={route.params.currentUser == item.sender.id ? true:false}
-                />
-                ))}
+                <View>
+                    {data.map((item) => (
+                        <Message
+                        text={item.text}
+                        id={item.chat.id}
+                        myMessage={route.params.currentUser == item.sender.id ? true:false}
+                    />
+                    ))}
+                </View>
+                <View style={styles.inputWithSend}>
+                    <TextInput
+                        style={styles.inputField} 
+                        placeholder="Message"
+                        onChangeText={onChangeText}
+                        value={message}
+                    />
+                    <TouchableOpacity onPress={textSend}>
+                        {message ? <Ionicons style={styles.sendIcon} name={"paper-plane"} size={30} color={"#ffffff"}/>:<Ionicons style={styles.sendIcon} name={"paper-plane-outline"} size={30} color={"#ffffff"}/>}
+                    </TouchableOpacity>
+                </View>
             </View>
+            
         )}
       </SafeAreaView>
     );
@@ -62,5 +97,28 @@ export default function ChatsRoom() {
       justifyContent: "flex-start",
       flexDirection: "row",
       textAlign: "left",
+    },
+    inputWithSend: {
+        justifyContent: "flex-end",
+        flexDirection: "row",
+        margin: 10,
+    },
+    inputField:{
+        //borderWidth: 1,
+        backgroundColor: "#ffffff80",
+        borderRadius: 50,
+        paddingHorizontal: 10,
+        marginRight: 10,
+        flex:1,
+    },
+    sendIcon:{
+        backgroundColor: "#6200ee",
+        borderRadius: 50,
+        width: 50,
+        height: 50,
+        justifyContent: "center",
+        alignItems: "center",
+        textAlign: "center",
+        textAlignVertical: "center",
     }
   });
