@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet,TouchableWithoutFeedback } from "react-native";
 import { Button } from "react-native-paper";
 import Avatar from "./Avatar";
 import { Ionicons } from "@expo/vector-icons";
@@ -40,24 +40,31 @@ export default function ChatItem(props: ChatItemProps) {
   //     setLoading(false);
   //   });
 
+  const onClick = () =>
+  {
+    console.log('Clickd')
+  }
+
   return (
-    <View>
-      {loading && <Loading />}
-      {!loading && (
-        <View style={styles.container}>
-          <View style={styles.containerItem}>
-            <Avatar fullName={props.chatName} />
-            <View>
-              <Text style={styles.nameLabel}>{props.chatName}</Text>
-              <Text style={styles.messageText}>{props.messageText}</Text>
+    <TouchableWithoutFeedback onPress={onClick}>
+      <View>
+        {loading && <Loading />}
+        {!loading && (
+          <View style={styles.container}>
+            <View style={styles.containerItem}>
+              <Avatar fullName={props.chatName} />
+              <View>
+                <Text style={styles.nameLabel}>{props.chatName}</Text>
+                <Text style={styles.messageText}>{props.messageText}</Text>
+              </View>
+            </View>
+            <View style={styles.containerItem}>
+              <Text style={styles.messageCreated}>{props.messageCreated}</Text>
             </View>
           </View>
-          <View style={styles.containerItem}>
-            <Text style={styles.messageCreated}>{props.messageCreated}</Text>
-          </View>
-        </View>
-      )}
-    </View>
+        )}
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
