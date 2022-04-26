@@ -18,7 +18,7 @@ export default function Message(props: MessageProps) {
             {loading && <Loading />}
             {!loading && (
             <View style={styles.container}>
-                <Text style={props.myMessage ? styles.messageRight:styles.messageRLeft}>{props.text}</Text>
+                <Text style={props.myMessage ? styles.messageRight:styles.messageLeft}>{props.text}</Text>
             </View>
             )}
         </View>
@@ -27,17 +27,19 @@ export default function Message(props: MessageProps) {
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    //flexDirection: "row",
-    //justifyContent: "space-between",
-    //alignItems: "center",
-    padding: 10,
+    margin: 5,
   },
   messageLeft: {
     textAlign: "left",
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: "#d2b3ff",
   },
   messageRight: {
     textAlign: "right",
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: "#8833ff",
   },
 });
 

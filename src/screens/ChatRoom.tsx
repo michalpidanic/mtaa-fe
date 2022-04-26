@@ -30,9 +30,10 @@ export default function ChatsRoom() {
                     Authorization: `Bearer ${token}`
                 }
             }
-            )})
+            )}).then(() => {
+                this.forceUpdate();
+            })
         }
-        
     };
 
     useEffect(() => {

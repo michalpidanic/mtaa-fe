@@ -17,11 +17,14 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import API from "../../Api";
 import { Loading } from "../components/Loading";
+import { useIsFocused } from '@react-navigation/native'
 
 export default function ChatsScreen() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const auth = useAuth();
+
+  const isFocused = useIsFocused()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,7 +46,7 @@ export default function ChatsScreen() {
     };
 
     fetchData();
-  }, []);
+  }, [isFocused]);
 
   return (
     <SafeAreaView>
