@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Appbar } from "react-native-paper";
 
-export default function ChatsScreen() {
+export default function CallScreen() {
   return (
     <SafeAreaView>
       <Appbar.Header style={styles.header}>

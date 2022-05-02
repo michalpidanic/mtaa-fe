@@ -5,6 +5,7 @@ import UsersScreen from "../screens/UsersScreen";
 import ChatRoom from "../screens/ChatRoom";
 import NotificationsScreen from "../screens/NotificationsScreen";
 import SettingsScreen from "../screens/SettingsScreen";
+import CallRoom from "../screens/CallRoom";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -44,6 +45,13 @@ function CallNav() {
         headerShown: false
       }}
       />
+      <Stack.Screen
+      name="CallRoom"
+      component={CallRoom}
+      options={{
+        headerShown: false
+      }}
+      />
     </Stack.Navigator>
   )
 }
@@ -66,7 +74,7 @@ export const AppRoutes = () => {
       />
       <Tab.Screen
         name="Calls"
-        component={CallNav}
+        component={CallRoom}
         options={{
           tabBarIcon: ({ focused }) => (
             <Ionicons
