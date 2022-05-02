@@ -67,8 +67,9 @@ export default function ChatsRoom() {
                 <View>
                     {data.map((item) => (
                         <Message
+                        key={item.id}
                         text={item.text}
-                        id={item.chat.id}
+                        id={item.id}
                         myMessage={route.params.currentUser == item.sender.id ? true:false}
                     />
                     ))}
