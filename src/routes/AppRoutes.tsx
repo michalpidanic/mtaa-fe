@@ -15,23 +15,37 @@ const Stack = createNativeStackNavigator();
 
 function ChatNav() {
   return (
-    <Stack.Navigator >
+    <Stack.Navigator screenOptions={{
+      headerShown: false
+    }}>
       <Stack.Screen
         name="Chat"
         component={ChatsScreen} 
         options={{
-          headerShown: false
         }}
         />
       <Stack.Screen
-        name="Room"
+        name="ChatRoom"
         component={ChatRoom} 
         options={{
-          headerShown: false
         }}
         />
     </Stack.Navigator>
   );
+}
+
+function CallNav() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+      name="Call"
+      component={CallsScreen}
+      options={{
+        headerShown: false
+      }}
+      />
+    </Stack.Navigator>
+  )
 }
 
 export const AppRoutes = () => {
@@ -52,7 +66,7 @@ export const AppRoutes = () => {
       />
       <Tab.Screen
         name="Calls"
-        component={CallsScreen}
+        component={CallNav}
         options={{
           tabBarIcon: ({ focused }) => (
             <Ionicons

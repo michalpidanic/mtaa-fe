@@ -58,6 +58,7 @@ export default function ChatsScreen() {
         <View>
           {data.map((item) => (
             <ChatItem
+              key = {item.chat.id}
               chatName={item.chat.name}
               messageText={item.lastMessage.text}
               messageCreated={

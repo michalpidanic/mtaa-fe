@@ -53,6 +53,7 @@ export default function UsersScreen() {
         <View>
           {data.map((item) => (
             <UsersItem
+              key={item.id}
               firstName={item.firstName}
               lastName={item.lastName}
               id={item.id}

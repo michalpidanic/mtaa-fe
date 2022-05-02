@@ -46,7 +46,7 @@ export default function ChatItem(props: ChatItemProps) {
 
   const onClick = () =>
   {
-    navigator.navigate("Room", {id: props.id, name: props.chatName, currentUser: props.currentUser});
+    navigator.navigate("ChatRoom", {id: props.id, name: props.chatName, currentUser: props.currentUser});
   }
 
   return (

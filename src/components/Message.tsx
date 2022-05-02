@@ -7,19 +7,24 @@ import { useAuth } from "../contexts/AuthContext";
 import { Loading } from "./Loading";
 import API from "../../Api";
 import { NavigationHelpersContext, useNavigation } from "@react-navigation/native";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default function Message(props: MessageProps) {
     const [loading, setLoading] = useState(false);
 
-    //console.log(props.myMessage)
+    const DeleteMessage = async () => {
+      console.log(props.myMessage)
+    }
 
     return (
         <View>
             {loading && <Loading />}
             {!loading && (
-            <View style={styles.container}>
+            <TouchableOpacity onLongPress={DeleteMessage}>
+              <View style={styles.container}>
                 <Text style={props.myMessage ? styles.messageRight:styles.messageLeft}>{props.text}</Text>
-            </View>
+              </View>
+            </TouchableOpacity>
             )}
         </View>
     );
