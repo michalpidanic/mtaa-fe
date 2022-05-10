@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { SafeAreaView, Text, View, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
+import { SafeAreaView, Text, View, StyleSheet, TextInput, TouchableOpacity, Alert} from 'react-native';
 import { Appbar } from 'react-native-paper';
 import { Loading } from '../components/Loading';
 import { useRoute } from '@react-navigation/native'
@@ -15,21 +15,29 @@ export default function ChatsRoom() {
     const [loading, setLoading] = useState(true);
     const auth = useAuth();
     const [message, onChangeText] = useState('');
-
-    let hasInternet = false
     
     let offlineList = []
+
+    let offlineData = []
     
     const route = useRoute();
 
     const setOfflineList = async (object) =>{
         try {
             const jsonObject = JSON.stringify(object)
-            console.log('object to write: ',object)
             await StorageService.setItem('@calls', jsonObject)
-            console.log('Writing offline list!\n')
         } catch (e) {
             console.error('Error saving offlineList: ', e)
+        }
+        return
+    }
+
+    const setDataList = async (id,object) =>{
+        try {
+            const jsonObject = JSON.stringify(object)
+            await StorageService.setItem(`@data${id}`, jsonObject)
+        } catch (e) {
+            console.error('Error saving offlineData: ', e)
         }
         return
     }
@@ -40,9 +48,20 @@ export default function ChatsRoom() {
             if(value !== null) {
               offlineList = (JSON.parse(value))
             }
-            console.log('\nReading offline list!')
         } catch(e) {
             console.error('Error reading offlineList: ', e)
+        }
+        return
+    }
+
+    const getDataList = async (id) =>{
+        try {
+            const value = await StorageService.getItem(`@data${id}`)
+            if(value !== null) {
+                offlineData = (JSON.parse(value))
+            }
+        } catch(e) {
+            console.error('Error reading offlineData: ', e)
         }
         return
     }
@@ -57,15 +76,24 @@ export default function ChatsRoom() {
         offlineList = []
     }
 
-    function fetchNetworkStatus()
+    async function fetchNetworkStatus()
     {
-        NetInfo.fetch().then(state => {
-            hasInternet = state.isInternetReachable
-        });
+    //    let hasInternet = await NetInfo.fetch()['_W']['isInternetReachable']
+    //    return hasInternet
+       const value = await StorageService.getItem('@internet')
+       if (value == 'false')
+       {
+            return false
+       }
+       else
+       {
+           return true
+       }
     }
 
     const textSend = async () => {
         let send = {}
+        console.log(message)
         {message && auth.getAccessToken().then((token) => {
             send = {
                 type: 'post',
@@ -82,44 +110,53 @@ export default function ChatsRoom() {
                         }
                     }
             }
-            if (hasInternet == false)
-            {
-                API.post(send['endpoint'], send['body'], send['head'])
-            } else
-            {
-                appendOfflineList(send)
-            }
+            
         })
         }
+        if (await fetchNetworkStatus() == true && message)
+        {
+            API.post(send['endpoint'], send['body'], send['head'])
+        } else if (message)
+        {
+            appendOfflineList(send)
+            console.log("Saved offline data!")
+        }
+        else
+        {
+            console.log('No message')
+        }
+        onChangeText('')
     };
 
-    function checkInternetAndSend()
-    {
-        fetchNetworkStatus()
-        textSend()
-    }
-
-    useEffect(() => {
-        fetchNetworkStatus()
-        getOfflineList()
+    useEffect( () => {
         const fetchData = async () => {
-        auth.getAccessToken().then((token) => {
-            API.get(`chat/${route.params.id}/messages`, {
-            // params: { page: page ?? null, limit: limit ?? null },
-            headers: { Authorization: `Bearer ${token}` },
-            })
-            .then((res) => {
-                //console.log(res);
-                setData(res.data.items);
-            })
-            .then(() => setLoading(false))
-            .catch((error) => {
+            const internet = await fetchNetworkStatus()
+            if(internet)
+            {
+                auth.getAccessToken().then((token) => {
+                    API.get(`chat/${route.params.id}/messages`, {
+                    // params: { page: page ?? null, limit: limit ?? null },
+                    headers: { Authorization: `Bearer ${token}` },
+                    })
+                    .then((res) => {
+                        //console.log(res);
+                        setData(res.data.items);
+                        setDataList(route.params.id,res.data.items);
+                    })
+                    .then(() => setLoading(false))
+                    .catch((error) => {
+                        setLoading(false);
+                        console.log(error);
+                    });
+                });
+            }
+            else
+            {
+                await getDataList(route.params.id);
+                await setData(offlineData);
                 setLoading(false);
-                console.log(error);
-            });
-        });
+            }
         };
-
         fetchData();
     }, []);
 
@@ -149,7 +186,7 @@ export default function ChatsRoom() {
                         onChangeText={onChangeText}
                         value={message}
                     />
-                    <TouchableOpacity onPress={checkInternetAndSend}>
+                    <TouchableOpacity onPress={textSend}>
                         {message ? <Ionicons style={styles.sendIcon} name={"paper-plane"} size={30} color={"#ffffff"}/>:<Ionicons style={styles.sendIcon} name={"paper-plane-outline"} size={30} color={"#ffffff"}/>}
                     </TouchableOpacity>
                 </View>

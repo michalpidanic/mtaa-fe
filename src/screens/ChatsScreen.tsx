@@ -25,34 +25,77 @@ import { Ionicons } from "@expo/vector-icons";
 export default function ChatsScreen() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasInternet, setInternet] = useState(true)
   const auth = useAuth();
 
   const isFocused = useIsFocused()
 
   let offlineList = []
 
+  const toggleInternet = async () =>
+  {
+    const value = await StorageService.getItem('@internet')
+    if(value !== null) {
+      if (value === 'true')
+      {
+        setInternet(false)
+        await StorageService.setItem('@internet', 'false')
+        console.log('You are offline!')
+      }
+      else
+      {
+        setInternet(true)
+        await StorageService.setItem('@internet', 'true')
+        console.log('You are online!')
+      }
+    }
+    else
+    {
+      setInternet(false)
+      await StorageService.setItem('@internet', 'false')
+      console.log('You are offline!')
+    }
+  }
+
   async function refreshAll()
   {
+    if (hasInternet)
+    {
       await getOfflineList()
       const listLength = offlineList.length;
-      for (let i = 0; i < listLength; i++)
+      if (listLength != 0)
       {
+        console.log(listLength)
+        for (let i = 0; i < listLength; i++)
+        {
           if (offlineList[i]['type'] == 'post')
           {
+            console.log(offlineList[i]['body'])
             await API.post(offlineList[i]['endpoint'], offlineList[i]['body'], offlineList[i]['head'])
           }
           else if (offlineList[i]['type'] == 'delete')
           {
+            console.log('delete: ',offlineList[i]['endpoint'])
             await API.delete(offlineList[i]['endpoint'], offlineList[i]['head'])
           }
           else if (offlineList[i]['type'] == 'patch')
           {
+            console.log('patch: ',offlineList[i]['endpoint'])
             await API.patch(offlineList[i]['endpoint'], offlineList[i]['body'], offlineList[i]['head'])
           }
-          console.log(offlineList[i]['body'])
+        }
+        setOfflineList([])
       }
-      setOfflineList([])
+      else
+      {
+        console.log('Nothing to sync!')
+      }
       return
+    }
+    else
+    {
+      console.log("You are offline!")
+    }
   }
 
   const setOfflineList = async (object) =>{
@@ -60,7 +103,7 @@ export default function ChatsScreen() {
           const jsonObject = JSON.stringify(object)
           console.log('object to write: ',object)
           await StorageService.setItem('@calls', jsonObject)
-          console.log('Writing offline list!\n')
+          console.log('Writing offline list.\n')
       } catch (e) {
           console.error('Error saving offlineList: ', e)
       }
@@ -73,7 +116,7 @@ export default function ChatsScreen() {
           if(value !== null) {
             offlineList = (JSON.parse(value))
           }
-          console.log('\nReading offline list!')
+          console.log('\nReading offline list.')
       } catch(e) {
           console.error('Error reading offlineList: ', e)
       }
@@ -108,6 +151,9 @@ export default function ChatsScreen() {
         <Appbar.Content title="Chats" style={styles.header} />
         <TouchableOpacity onPress={refreshAll}>
           {offlineList == [] ? <Ionicons style={styles.sendIcon} name={"refresh-circle"} size={30} color={"#ffffff"}/>:<Ionicons style={styles.sendIcon} name={"refresh-circle-outline"} size={30} color={"#ffffff"}/>}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={toggleInternet}>
+          {hasInternet == true ? <Ionicons style={styles.sendIcon} name={"cloud-outline"} size={30} color={"#ffffff"}/>:<Ionicons style={styles.sendIcon} name={"cloud-offline-outline"} size={30} color={"#ffffff"}/>}
         </TouchableOpacity>
       </Appbar.Header>
       {loading && <Loading />}
@@ -183,5 +229,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFF",
     width: "100%",
+  },
+  sendIcon:{
+    backgroundColor: "#6200ee",
+    borderRadius: 50,
+    width: 50,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    textAlign: "center",
+    textAlignVertical: "center",
   },
 });

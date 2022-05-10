@@ -18,21 +18,25 @@ export default function Message(props: MessageProps) {
 
     let offlineList = []
 
-    let hasInternet = false
-
-    function fetchNetworkStatus()
+    async function fetchNetworkStatus()
     {
-        NetInfo.fetch().then(state => {
-            hasInternet = state.isInternetReachable
-        });
+    //    let hasInternet = await NetInfo.fetch()['_W']['isInternetReachable']
+    //    return hasInternet
+       const value = await StorageService.getItem('@internet')
+       if (value == 'false')
+       {
+            return false
+       }
+       else
+       {
+           return true
+       }
     }
 
     const setOfflineList = async (object) =>{
       try {
           const jsonObject = JSON.stringify(object)
-          console.log('object to write: ',object)
           await StorageService.setItem('@calls', jsonObject)
-          console.log('Writing offline list!\n')
       } catch (e) {
           console.error('Error saving offlineList: ', e)
       }
@@ -45,7 +49,6 @@ export default function Message(props: MessageProps) {
             if(value !== null) {
               offlineList = (JSON.parse(value))
             }
-            console.log('\nReading offline list!')
         } catch(e) {
             console.error('Error reading offlineList: ', e)
         }
@@ -64,15 +67,15 @@ export default function Message(props: MessageProps) {
 
     const messageMenu = () => {
       setEditVisible(true);
-      console.log(props.id);
     }
 
-    const messageEdit = () => {
-      fetchNetworkStatus()
+    const messageEdit = async () => {
+      const internet = await fetchNetworkStatus()
       setEditVisible(!editVisible)
-      let send = {}
+      
       {message && auth.getAccessToken().then((token) => {
-        send = {
+        console.log(props.id)
+        let send = {
           type: 'patch',
           endpoint: `/message/${props.id}`,
           body: {
@@ -86,25 +89,25 @@ export default function Message(props: MessageProps) {
                   }
               }
         }
-        if (hasInternet == false)
+        if (internet == true)
         {
           API.patch(send['endpoint'], send['body'], send['head'])
         } else
         {
           appendOfflineList(send)
+          console.log("Saved offline data!")
         }
         })
     }
-    editMessage(message);
+    //editMessage(message);
     console.log(`Edited message with id: ${props.id} to '${message}'.`)
     }
 
-    const messageDelete = () => {
-      fetchNetworkStatus()
+    const messageDelete = async () => {
+      const internet = await fetchNetworkStatus()
       setEditVisible(!editVisible)
-      let send = {}
       {message && auth.getAccessToken().then((token) => {
-        send = {
+        let send = {
           type: 'delete',
           endpoint: `/message/${props.id}`,
           body: {},
@@ -115,12 +118,15 @@ export default function Message(props: MessageProps) {
                   }
               }
         }
-        if (hasInternet == false)
+        if (internet == true)
         {
+            
             API.delete(send['endpoint'], send['head'])
+            
         } else
         {
             appendOfflineList(send)
+            console.log("Saved offline data!")
         }
         })
     }
