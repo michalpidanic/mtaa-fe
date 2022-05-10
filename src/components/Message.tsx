@@ -6,6 +6,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
 import { Loading } from "./Loading";
 import API from "../../Api";
+import StorageService from '../services/StorageService'
+import NetInfo from '@react-native-community/netinfo';
 
 export default function Message(props: MessageProps) {
     const [loading, setLoading] = useState(false);
@@ -14,43 +16,113 @@ export default function Message(props: MessageProps) {
     const auth = useAuth();
     const [messageShowText, editMessage] = useState(props.text);
 
+    let offlineList = []
+
+    let hasInternet = false
+
+    function fetchNetworkStatus()
+    {
+        NetInfo.fetch().then(state => {
+            hasInternet = state.isInternetReachable
+        });
+    }
+
+    const setOfflineList = async (object) =>{
+      try {
+          const jsonObject = JSON.stringify(object)
+          console.log('object to write: ',object)
+          await StorageService.setItem('@calls', jsonObject)
+          console.log('Writing offline list!\n')
+      } catch (e) {
+          console.error('Error saving offlineList: ', e)
+      }
+      return
+    }
+
+    const getOfflineList = async () =>{
+        try {
+            const value = await StorageService.getItem('@calls')
+            if(value !== null) {
+              offlineList = (JSON.parse(value))
+            }
+            console.log('\nReading offline list!')
+        } catch(e) {
+            console.error('Error reading offlineList: ', e)
+        }
+        return
+    }
+
+    async function appendOfflineList(item)
+    {
+        await getOfflineList()
+        const newList = await offlineList.concat(item);
+        offlineList = newList;
+        await console.log(offlineList)
+        await setOfflineList(offlineList)
+        offlineList = []
+    }
+
     const messageMenu = () => {
       setEditVisible(true);
       console.log(props.id);
     }
 
     const messageEdit = () => {
+      fetchNetworkStatus()
       setEditVisible(!editVisible)
+      let send = {}
       {message && auth.getAccessToken().then((token) => {
-        API.patch(`/message/${props.id}`,
-        {
+        send = {
+          type: 'patch',
+          endpoint: `/message/${props.id}`,
+          body: {
             text: message,
             mentions: "",
-        },
-        {
-            headers: 
-            {
-                Authorization: `Bearer ${token}`
-            }
+          },
+          head: {
+                  headers: 
+                  {
+                      Authorization: `Bearer ${token}`
+                  }
+              }
         }
-        )})
+        if (hasInternet == false)
+        {
+          API.patch(send['endpoint'], send['body'], send['head'])
+        } else
+        {
+          appendOfflineList(send)
+        }
+        })
     }
     editMessage(message);
     console.log(`Edited message with id: ${props.id} to '${message}'.`)
-
     }
 
     const messageDelete = () => {
+      fetchNetworkStatus()
       setEditVisible(!editVisible)
+      let send = {}
       {message && auth.getAccessToken().then((token) => {
-        API.delete(`/message/${props.id}`,
-        {
-            headers: 
-            {
-                Authorization: `Bearer ${token}`
-            }
+        send = {
+          type: 'delete',
+          endpoint: `/message/${props.id}`,
+          body: {},
+          head: {
+                  headers: 
+                  {
+                      Authorization: `Bearer ${token}`
+                  }
+              }
         }
-        )})
+        if (hasInternet == false)
+        {
+            API.delete(send['endpoint'], send['head'])
+        } else
+        {
+            appendOfflineList(send)
+        }
+        })
     }
     console.log(`Deleted message with id: ${props.id}.`)
     }
@@ -194,4 +266,5 @@ type MessageProps = {
   id: number;
   text: string;
   myMessage: boolean;
+  parent: object;
 };

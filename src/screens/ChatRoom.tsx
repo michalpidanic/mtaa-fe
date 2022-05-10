@@ -8,40 +8,59 @@ import API from "../../Api";
 import Message from '../components/Message';
 import { Ionicons } from "@expo/vector-icons";
 import NetInfo from '@react-native-community/netinfo';
-import { State } from 'react-native-gesture-handler';
+import StorageService from '../services/StorageService'
 
 export default function ChatsRoom() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const auth = useAuth();
     const [message, onChangeText] = useState('');
-    const [hasInternet, setConnectionStatus] = useState(false)
-    const [offlineList, refreshOfflineList] = useState([])
+
+    let hasInternet = false
+    
+    let offlineList = []
     
     const route = useRoute();
 
-    function refreshAll()
-    {
-        const listLength = offlineList.length;
-        for (let i = 0; i < listLength; i++)
-        {
-            API.post(offlineList[i]['endpoint'], offlineList[i]['body'], offlineList[i]['head'])
-            console.log(offlineList[i]['body'])
+    const setOfflineList = async (object) =>{
+        try {
+            const jsonObject = JSON.stringify(object)
+            console.log('object to write: ',object)
+            await StorageService.setItem('@calls', jsonObject)
+            console.log('Writing offline list!\n')
+        } catch (e) {
+            console.error('Error saving offlineList: ', e)
         }
-        refreshOfflineList([])
+        return
     }
 
-    function appendOfflineList(item)
+    const getOfflineList = async () =>{
+        try {
+            const value = await StorageService.getItem('@calls')
+            if(value !== null) {
+              offlineList = (JSON.parse(value))
+            }
+            console.log('\nReading offline list!')
+        } catch(e) {
+            console.error('Error reading offlineList: ', e)
+        }
+        return
+    }
+
+    async function appendOfflineList(item)
     {
-        const newList = offlineList.concat(item)
-        refreshOfflineList(newList)
-        console.log(offlineList)
+        await getOfflineList()
+        const newList = await offlineList.concat(item);
+        offlineList = newList;
+        await console.log(offlineList)
+        await setOfflineList(offlineList)
+        offlineList = []
     }
 
     function fetchNetworkStatus()
     {
         NetInfo.fetch().then(state => {
-            setConnectionStatus(state.isInternetReachable)
+            hasInternet = state.isInternetReachable
         });
     }
 
@@ -49,6 +68,7 @@ export default function ChatsRoom() {
         let send = {}
         {message && auth.getAccessToken().then((token) => {
             send = {
+                type: 'post',
                 endpoint: '/message/send',
                 body: {
                         text: message,
@@ -81,6 +101,7 @@ export default function ChatsRoom() {
 
     useEffect(() => {
         fetchNetworkStatus()
+        getOfflineList()
         const fetchData = async () => {
         auth.getAccessToken().then((token) => {
             API.get(`chat/${route.params.id}/messages`, {
@@ -106,9 +127,6 @@ export default function ChatsRoom() {
         <SafeAreaView>
         <Appbar.Header style={styles.header}>
             <Appbar.Content title={route.params.name} style={styles.header} />
-            <TouchableOpacity onPress={refreshAll}>
-                {message ? <Ionicons style={styles.sendIcon} name={"refresh-circle"} size={30} color={"#ffffff"}/>:<Ionicons style={styles.sendIcon} name={"refresh-circle-outline"} size={30} color={"#ffffff"}/>}
-            </TouchableOpacity>
         </Appbar.Header>
         {loading && <Loading />}
         {!loading && (
@@ -120,6 +138,7 @@ export default function ChatsRoom() {
                         text={item.text}
                         id={item.id}
                         myMessage={route.params.currentUser == item.sender.id ? true:false}
+                        parent={this}
                     />
                     ))}
                 </View>
